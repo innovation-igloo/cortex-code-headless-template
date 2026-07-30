@@ -1,0 +1,21 @@
+# Build context excludes — keep the image small and free of local state.
+.git
+.gitignore
+.venv
+venv
+.env
+.env.*
+*.pem
+*.p8
+connections.toml
+config.toml
+__pycache__
+*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.DS_Store
+tests
+deploy
+*.md
+!README.md

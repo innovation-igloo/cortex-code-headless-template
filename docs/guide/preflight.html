@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="snowflake-source" content="cortex-agent-authored" />
+<title>Pre-Flight Checks: The SPCS Auth Recipe</title>
+<script type="application/json" id="snowflake-report-metadata">
+{
+  "generated": "2026-07-27",
+  "intent": "Deep-dive page documenting the validated Snowpark Container Services auth recipe for running the Cortex Code Agent SDK: the error progression and the five things that must be true (PAT, auth-policy bypass, external host, wide EAI egress, connection files). Self-contained, dependency-free HTML.",
+  "sources": [ { "type": "file", "path": "_github/cortex-code-headless-template/src/headless_agent/auth.py" }, { "type": "file", "path": "_github/cortex-code-headless-template/deploy/00_setup.sql" } ]
+}
+</script>
+<style>
+:root{--sf-blue:#29B5E8;--sf-blue-deep:#11567F;--sf-blue-darker:#0A2E44;--sf-cyan:#71D3DC;--amber:#E0912F;--amber-deep:#B06E1C;--go:#2E7D32;--warn:#C0392B;--bg:#FFFFFF;--bg-alt:#F7F9FB;--text:#1E2A33;--text-muted:#5A6872;--border:#E5EAF0;--border-strong:#CFD7E0;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0;font-family:var(--font-sans);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.6;}
+a{color:var(--sf-blue-deep);}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.85rem 5vw;background:rgba(10,46,68,0.97);color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);}
+.topbar .brand{font-weight:700;font-size:0.98rem;display:flex;align-items:center;gap:0.5rem;white-space:nowrap;}
+.topbar .brand .snow{color:var(--sf-cyan);}
+.topbar nav{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.topbar nav a{color:rgba(255,255,255,0.82);text-decoration:none;font-size:0.85rem;font-weight:600;padding:0.35em 0.7em;border-radius:7px;transition:background .15s,color .15s;}
+.topbar nav a:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.topbar nav a.active{background:var(--sf-blue);color:#fff;}
+.hero{background:radial-gradient(120% 130% at 85% -10%,var(--sf-blue-deep) 0%,var(--sf-blue-darker) 70%);color:#fff;padding:7vh 5vw 6vh;}
+.hero .eyebrow{color:var(--sf-cyan);}
+.eyebrow{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.16em;color:var(--amber);display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;}
+.eyebrow::before{content:"\25C9";opacity:0.8;}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-0.02em;margin:0 0 0.8rem;line-height:1.04;}
+.hero p{font-size:clamp(1.05rem,2.2vw,1.3rem);color:rgba(255,255,255,0.9);max-width:64ch;margin:0;}
+.wrap{max-width:900px;margin:0 auto;padding:0 5vw;}
+section.band{padding:5.5vh 0;} section.band.alt{background:var(--bg-alt);}
+h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;color:var(--sf-blue-deep);letter-spacing:-0.02em;margin:0 0 1rem;}
+h3{font-size:1.2rem;color:var(--sf-blue-deep);margin:1.8rem 0 0.6rem;}
+.lead{font-size:1.12rem;color:var(--text-muted);max-width:66ch;margin:0 0 1.2rem;}
+p{max-width:70ch;} ul{max-width:70ch;} li{margin:0.4rem 0;}
+.eyebrow.sec{color:var(--amber);}
+pre{background:var(--sf-blue-darker);color:#e8f6fc;border-radius:12px;padding:1.1rem 1.3rem;overflow-x:auto;font-family:var(--font-mono);font-size:0.86rem;line-height:1.55;margin:1.2rem 0;}
+pre .c{color:var(--sf-cyan);} pre .ok{color:#6ee7a8;} pre .k{color:#f0b866;} pre .r{color:#f2a49a;}
+code.inline{font-family:var(--font-mono);font-size:0.88em;background:rgba(17,86,127,0.07);padding:0.12em 0.42em;border-radius:5px;color:var(--sf-blue-deep);}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:0.93rem;}
+th,td{text-align:left;padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);vertical-align:top;}
+th{background:var(--bg-alt);color:var(--sf-blue-deep);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+td code{font-family:var(--font-mono);font-size:0.85em;color:var(--sf-blue-deep);}
+.step-n{color:var(--amber-deep);font-weight:800;}
+.callout{border-radius:12px;padding:1.1rem 1.3rem;margin:1.4rem 0;border:1px solid var(--border);border-left:5px solid var(--sf-blue);background:var(--bg-alt);}
+.callout.warn{border-left-color:var(--amber);background:#FBF2E3;}
+.callout.go{border-left-color:var(--go);background:#F1F8F4;}
+.callout .t{font-weight:700;color:var(--sf-blue-deep);margin-bottom:0.3rem;}
+.callout.warn .t{color:var(--amber-deep);} .callout.go .t{color:var(--go);}
+.recipe{list-style:none;padding:0;margin:1rem 0;counter-reset:r;}
+.recipe li{position:relative;padding:1rem 1.1rem 1rem 3.4rem;border:1px solid var(--border);border-radius:12px;margin:0.8rem 0;background:var(--bg);}
+.recipe li::before{counter-increment:r;content:counter(r);position:absolute;left:1rem;top:1rem;width:1.7rem;height:1.7rem;border-radius:50%;background:var(--sf-blue);color:#fff;font-weight:800;font-size:0.9rem;display:flex;align-items:center;justify-content:center;}
+.recipe li b{color:var(--sf-blue-deep);}
+.pager{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2rem;}
+.pager a{text-decoration:none;font-weight:700;color:var(--sf-blue-deep);}
+footer{background:var(--sf-blue-darker);color:rgba(255,255,255,0.75);padding:4vh 5vw;font-size:0.9rem;}
+footer a{color:var(--sf-cyan);text-decoration:none;font-weight:600;}
+@media (max-width:760px){ .topbar{flex-direction:column;align-items:flex-start;} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span>&#10052;</span><span><span class="snow">Cortex Code, Headless</span> &middot; Mission Log</span></div>
+  <nav>
+    <a href="index.html">Overview</a>
+    <a href="walkthrough.html">Flight Plan</a>
+    <a href="preflight.html" class="active">Pre-Flight</a>
+    <a href="launch.html">Launch</a>
+    <a href="payload.html">Payload</a>
+    <a href="../executive.html">Briefing</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">02 &middot; Pre-Flight Checks</div>
+    <h1>Making Cortex inference work from SPCS</h1>
+    <p>This is the part that isn't obvious. Getting the agent to authenticate to Cortex from inside a container took clearing five separate blockers. Here is each one and the fix, so you clear them in one pass.</p>
+  </div>
+</header>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow sec">The error progression</div>
+    <h2>Five blockers, in the order they bite</h2>
+    <p class="lead">Each fix reveals the next error. All five must be true for a turn to succeed.</p>
+    <table>
+      <tr><th>#</th><th>Symptom</th><th>Root cause</th><th>Fix</th></tr>
+      <tr><td class="step-n">1</td><td><code>No Snowflake connection available</code></td><td>The CLI needs a connection <em>file</em>; it doesn't read <code>SNOWFLAKE_CONNECTIONS_*</code> env vars in-container.</td><td><code>auth.py</code> writes <code>config.toml</code>.</td></tr>
+      <tr><td class="step-n">2</td><td>Instant fail, error <code>395092</code></td><td>The SPCS session token is <strong>not supported</strong> for the Cortex inference path.</td><td>Use a <strong>PAT</strong>, not the SPCS token.</td></tr>
+      <tr><td class="step-n">3</td><td><code>IP ... is not allowed to access Snowflake</code></td><td>An account network policy rejects the compute-pool IP.</td><td>Auth policy with <code>NETWORK_POLICY_EVALUATION = NOT_ENFORCED</code> on the service user.</td></tr>
+      <tr><td class="step-n">4</td><td><code>Session no longer exists</code></td><td>PAT auth over the internal SPCS host doesn't work.</td><td>Use the <strong>external</strong> account host (no internal host line).</td></tr>
+      <tr><td class="step-n">5</td><td><code>connection interrupted while streaming</code></td><td>The inference response streams from a host a narrow egress list misses.</td><td>EAI egress <code>('0.0.0.0:80','0.0.0.0:443')</code>.</td></tr>
+    </table>
+    <div class="callout go"><div class="t">&#10003; Result</div>With all five cleared, a turn returns <code class="inline">subtype: "success"</code> and streams the answer.</div>
+  </div>
+</section>
+
+<section class="band alt">
+  <div class="wrap">
+    <div class="eyebrow sec">The recipe</div>
+    <h2>What must be true</h2>
+    <ol class="recipe">
+      <li><b>PAT auth.</b> A dedicated <code class="inline">TYPE=SERVICE</code> user with a Programmatic Access Token. The SPCS OAuth token cannot reach Cortex inference.</li>
+      <li><b>Auth-policy bypass.</b> Attach an authentication policy with <code class="inline">PAT_POLICY = (NETWORK_POLICY_EVALUATION = NOT_ENFORCED)</code> so the container's IP isn't rejected. This does not touch the account network policy.</li>
+      <li><b>External host.</b> Connect via the account (<code class="inline">account.snowflakecomputing.com</code>), not the SPCS-internal <code class="inline">SNOWFLAKE_HOST</code>.</li>
+      <li><b>Wide egress.</b> An External Access Integration whose network rule allows <code class="inline">0.0.0.0:80</code> and <code class="inline">0.0.0.0:443</code>, attached to the service.</li>
+      <li><b>Connection files.</b> The container writes <code class="inline">config.toml</code> (the SQL connection) and <code class="inline">cortex/settings.json</code> (<code class="inline">cortexAgentConnectionName</code>, the inference connection).</li>
+    </ol>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow sec">Setup</div>
+    <h2>The identity + egress SQL</h2>
+    <p class="lead">From <code class="inline">deploy/00_setup.sql</code>. The service user and its auth policy are the two pieces that unlock SPCS.</p>
+    <pre><span class="c">-- dedicated service user (programmatic auth only)</span>
+CREATE USER CORTEX_HEADLESS_SVC TYPE = SERVICE
+  DEFAULT_ROLE = SYSADMIN DEFAULT_WAREHOUSE = CORTEX_HEADLESS_WH;
+GRANT ROLE SYSADMIN TO USER CORTEX_HEADLESS_SVC;
+
+<span class="c">-- let this user's PAT skip the account network policy IP check</span>
+CREATE AUTHENTICATION POLICY SVC_PAT_POLICY
+  AUTHENTICATION_METHODS = (<span class="ok">'PROGRAMMATIC_ACCESS_TOKEN'</span>)
+  PAT_POLICY = ( <span class="k">NETWORK_POLICY_EVALUATION = NOT_ENFORCED</span> );
+ALTER USER CORTEX_HEADLESS_SVC SET AUTHENTICATION POLICY SVC_PAT_POLICY;
+
+<span class="c">-- egress so the inference stream can flow</span>
+CREATE NETWORK RULE SNOWFLAKE_EGRESS TYPE = HOST_PORT MODE = EGRESS
+  VALUE_LIST = (<span class="ok">'0.0.0.0:80','0.0.0.0:443'</span>);
+CREATE EXTERNAL ACCESS INTEGRATION CORTEX_HEADLESS_EAI
+  ALLOWED_NETWORK_RULES = (SNOWFLAKE_EGRESS) ENABLED = TRUE;</pre>
+    <div class="callout warn"><div class="t">&#9888; Why not the SPCS OAuth token?</div>It authenticates for standard SQL, but the Cortex Agent / inference path rejects it (<code class="inline">395092</code>). PAT is the supported route for headless Cortex Code in SPCS.</div>
+  </div>
+</section>
+
+<section class="band alt">
+  <div class="wrap">
+    <div class="eyebrow sec">In the container</div>
+    <h2>The connection files that get written</h2>
+    <p class="lead"><code class="inline">auth.py</code> materializes these at startup from the injected env + PAT secret. Note: external account, no host line.</p>
+    <pre><span class="c"># ~/.snowflake/config.toml</span>
+default_connection_name = <span class="ok">"poc"</span>
+[connections.poc]
+account = <span class="ok">"MYORG-MYACCT"</span>
+authenticator = <span class="ok">"programmatic_access_token"</span>
+password = <span class="ok">"&lt;PAT&gt;"</span>
+role = <span class="ok">"SYSADMIN"</span>
+warehouse = <span class="ok">"CORTEX_HEADLESS_WH"</span>
+
+<span class="c"># ~/.snowflake/cortex/settings.json  (the inference connection)</span>
+{ "cortexAgentConnectionName": <span class="ok">"poc"</span> }</pre>
+    <div class="pager">
+      <a href="walkthrough.html">&larr; Flight Plan</a>
+      <a href="launch.html">Launch Sequence &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>Cortex Code Headless Agent template.</span> &nbsp; <a href="../executive.html">Executive briefing</a></div>
+</footer>
+
+</body>
+</html>

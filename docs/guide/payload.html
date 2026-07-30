@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="snowflake-source" content="cortex-agent-authored" />
+<title>Payload: Make It Yours</title>
+<script type="application/json" id="snowflake-report-metadata">
+{
+  "generated": "2026-07-27",
+  "intent": "Extending page for the Cortex Code Headless Agent template: adding in-process tools, hooks, permission policy, auth modes, and configuration. Self-contained, dependency-free HTML.",
+  "sources": [ { "type": "file", "path": "_github/cortex-code-headless-template/src/headless_agent/tools.py" }, { "type": "file", "path": "_github/cortex-code-headless-template/src/headless_agent/config.py" } ]
+}
+</script>
+<style>
+:root{--sf-blue:#29B5E8;--sf-blue-deep:#11567F;--sf-blue-darker:#0A2E44;--sf-cyan:#71D3DC;--amber:#E0912F;--amber-deep:#B06E1C;--go:#2E7D32;--warn:#C0392B;--bg:#FFFFFF;--bg-alt:#F7F9FB;--text:#1E2A33;--text-muted:#5A6872;--border:#E5EAF0;--border-strong:#CFD7E0;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0;font-family:var(--font-sans);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.6;}
+a{color:var(--sf-blue-deep);}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.85rem 5vw;background:rgba(10,46,68,0.97);color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);}
+.topbar .brand{font-weight:700;font-size:0.98rem;display:flex;align-items:center;gap:0.5rem;white-space:nowrap;}
+.topbar .brand .snow{color:var(--sf-cyan);}
+.topbar nav{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.topbar nav a{color:rgba(255,255,255,0.82);text-decoration:none;font-size:0.85rem;font-weight:600;padding:0.35em 0.7em;border-radius:7px;transition:background .15s,color .15s;}
+.topbar nav a:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.topbar nav a.active{background:var(--sf-blue);color:#fff;}
+.hero{background:radial-gradient(120% 130% at 85% -10%,var(--sf-blue-deep) 0%,var(--sf-blue-darker) 70%);color:#fff;padding:7vh 5vw 6vh;}
+.hero .eyebrow{color:var(--sf-cyan);}
+.eyebrow{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.16em;color:var(--amber);display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;}
+.eyebrow::before{content:"\25C9";opacity:0.8;}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-0.02em;margin:0 0 0.8rem;line-height:1.04;}
+.hero p{font-size:clamp(1.05rem,2.2vw,1.3rem);color:rgba(255,255,255,0.9);max-width:64ch;margin:0;}
+.wrap{max-width:900px;margin:0 auto;padding:0 5vw;}
+section.band{padding:5.5vh 0;} section.band.alt{background:var(--bg-alt);}
+h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:800;color:var(--sf-blue-deep);letter-spacing:-0.02em;margin:0 0 1rem;}
+h3{font-size:1.15rem;color:var(--sf-blue-deep);margin:1.6rem 0 0.5rem;}
+.lead{font-size:1.12rem;color:var(--text-muted);max-width:66ch;margin:0 0 1.2rem;}
+p{max-width:70ch;} ul{max-width:70ch;} li{margin:0.4rem 0;}
+.eyebrow.sec{color:var(--amber);}
+pre{background:var(--sf-blue-darker);color:#e8f6fc;border-radius:12px;padding:1.1rem 1.3rem;overflow-x:auto;font-family:var(--font-mono);font-size:0.86rem;line-height:1.55;margin:1rem 0;}
+pre .c{color:var(--sf-cyan);} pre .ok{color:#6ee7a8;} pre .k{color:#f0b866;}
+code.inline{font-family:var(--font-mono);font-size:0.88em;background:rgba(17,86,127,0.07);padding:0.12em 0.42em;border-radius:5px;color:var(--sf-blue-deep);}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:0.93rem;}
+th,td{text-align:left;padding:0.6rem 0.8rem;border-bottom:1px solid var(--border);vertical-align:top;}
+th{background:var(--bg-alt);color:var(--sf-blue-deep);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.05em;}
+td code{font-family:var(--font-mono);font-size:0.85em;color:var(--sf-blue-deep);}
+.callout{border-radius:12px;padding:1.1rem 1.3rem;margin:1.2rem 0;border:1px solid var(--border);border-left:5px solid var(--sf-blue);background:var(--bg-alt);}
+.callout.warn{border-left-color:var(--amber);background:#FBF2E3;}
+.callout .t{font-weight:700;color:var(--sf-blue-deep);margin-bottom:0.3rem;}
+.callout.warn .t{color:var(--amber-deep);}
+.pager{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:2rem;}
+.pager a{text-decoration:none;font-weight:700;color:var(--sf-blue-deep);}
+footer{background:var(--sf-blue-darker);color:rgba(255,255,255,0.75);padding:4vh 5vw;font-size:0.9rem;}
+footer a{color:var(--sf-cyan);text-decoration:none;font-weight:600;}
+@media (max-width:760px){ .topbar{flex-direction:column;align-items:flex-start;} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span>&#10052;</span><span><span class="snow">Cortex Code, Headless</span> &middot; Mission Log</span></div>
+  <nav>
+    <a href="index.html">Overview</a>
+    <a href="walkthrough.html">Flight Plan</a>
+    <a href="preflight.html">Pre-Flight</a>
+    <a href="launch.html">Launch</a>
+    <a href="payload.html" class="active">Payload</a>
+    <a href="../executive.html">Briefing</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">04 &middot; Payload</div>
+    <h1>Make it the customer's agent</h1>
+    <p>The template is a scaffold. Here are the extension points you'll actually touch to shape it for a POC: tools, hooks, permissions, and configuration.</p>
+  </div>
+</header>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow sec">Custom tools</div>
+    <h2>Add an in-process tool</h2>
+    <p class="lead">In-process MCP tools run inside the service process, so they have direct access to your app state. This is the main thing you'll extend, in <code class="inline">tools.py</code>.</p>
+    <pre><span class="k">from</span> cortex_code_agent_sdk <span class="k">import</span> tool, create_sdk_mcp_server
+
+<span class="c">@tool("lookup_order", "Look up an order by id", {"order_id": str})</span>
+<span class="k">async def</span> lookup_order(args):
+    oid = args[<span class="ok">"order_id"</span>]
+    <span class="c"># ... your logic (call an API, query app state, etc.)</span>
+    <span class="k">return</span> {<span class="ok">"content"</span>: [{<span class="ok">"type"</span>: <span class="ok">"text"</span>, <span class="ok">"text"</span>: f<span class="ok">"Order {oid}: shipped"</span>}]}
+
+<span class="k">def</span> build_tool_server():
+    <span class="k">return</span> create_sdk_mcp_server(<span class="ok">"poc_tools"</span>, tools=[lookup_order])</pre>
+    <p>The agent addresses it as <code class="inline">mcp__poc_tools__lookup_order</code>. The built-in Snowflake query tool is <code class="inline">SQL</code>.</p>
+  </div>
+</section>
+
+<section class="band alt">
+  <div class="wrap">
+    <div class="eyebrow sec">Guardrails</div>
+    <h2>Permissions &amp; hooks</h2>
+    <p class="lead">The default <code class="inline">can_use_tool</code> policy auto-allows read tools and denies non-allowlisted state-changing tools (<code class="inline">Bash</code>, <code class="inline">Write</code>, <code class="inline">Edit</code>). Widen it via <code class="inline">HEADLESS_AGENT_ALLOWED_TOOLS</code> or edit <code class="inline">permissions.py</code>.</p>
+    <p>Hooks in <code class="inline">hooks.py</code> fire on <code class="inline">PreToolUse</code> / <code class="inline">PostToolUse</code> for audit logging &mdash; a good place to add per-POC redaction, metrics, or approval gates.</p>
+    <div class="callout warn"><div class="t">&#9888; Bypass + allowlist footgun</div>With <code class="inline">permission_mode = bypassPermissions</code>, do <strong>not</strong> also set an allowlist &mdash; CLI 1.1.x will permanently block the <code class="inline">SQL</code> tool. The template clears the allowlist automatically in bypass mode.</div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow sec">Configuration</div>
+    <h2>Settings you'll change</h2>
+    <p class="lead">All settings are <code class="inline">HEADLESS_AGENT_*</code> env vars (see <code class="inline">.env.example</code>).</p>
+    <table>
+      <tr><th>Var</th><th>Default</th><th>Notes</th></tr>
+      <tr><td><code>AUTH_MODE</code></td><td><code>dev</code> / <code>pat</code></td><td><code>dev</code> local connection; <code>pat</code> for SPCS; <code>spcs_oauth</code> is unsupported for inference.</td></tr>
+      <tr><td><code>CONNECTION</code></td><td><code>my-connection</code></td><td>Connection name; in <code>pat</code> mode matches <code>SNOWFLAKE_CONNECTIONS_&lt;NAME&gt;_*</code>.</td></tr>
+      <tr><td><code>MODEL</code></td><td><code>auto</code></td><td>Cortex picks the best available model.</td></tr>
+      <tr><td><code>ALLOWED_TOOLS</code></td><td><code>SQL,Read,Grep,Glob</code></td><td>Auto-approved tools.</td></tr>
+      <tr><td><code>PERMISSION_MODE</code></td><td><code>default</code></td><td><code>default</code> / <code>plan</code> / <code>acceptEdits</code> / <code>bypassPermissions</code>.</td></tr>
+      <tr><td><code>SYSTEM_PROMPT</code></td><td>&mdash;</td><td>Override the agent's system prompt for the POC's domain.</td></tr>
+    </table>
+    <div class="callout"><div class="t">Tip</div>Point <code class="inline">HEADLESS_AGENT_SYSTEM_PROMPT</code> at a domain-specific brief and add one or two in-process tools &mdash; that's usually all a compelling POC needs.</div>
+    <div class="pager">
+      <a href="launch.html">&larr; Launch Sequence</a>
+      <a href="index.html">Back to overview &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><span>Cortex Code Headless Agent template.</span> &nbsp; <a href="../executive.html">Executive briefing</a></div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="snowflake-source" content="cortex-agent-authored" />
+<title>Cortex Code, Headless: Mission Log</title>
+<script type="application/json" id="snowflake-report-metadata">
+{
+  "generated": "2026-07-27",
+  "intent": "Hub page for the technical doc-site of the Cortex Code Headless Agent template. Self-contained, dependency-free HTML. Mission Control motif. Links to the walkthrough (architecture) and three deep-dive pages: pre-flight (SPCS auth), launch (deploy), payload (extending).",
+  "sources": [ { "type": "file", "path": "_github/cortex-code-headless-template/README.md" } ],
+  "links": [
+    { "title": "Flight Plan (walkthrough)", "href": "walkthrough.html" },
+    { "title": "Pre-Flight Checks (SPCS auth)", "href": "preflight.html" },
+    { "title": "Launch Sequence (deploy)", "href": "launch.html" },
+    { "title": "Payload (extend)", "href": "payload.html" }
+  ]
+}
+</script>
+<style>
+:root{
+  --sf-blue:#29B5E8; --sf-blue-deep:#11567F; --sf-blue-darker:#0A2E44; --sf-cyan:#71D3DC;
+  --amber:#E0912F; --amber-deep:#B06E1C; --go:#2E7D32; --warn:#C0392B;
+  --bg:#FFFFFF; --bg-alt:#F7F9FB; --text:#1E2A33; --text-muted:#5A6872;
+  --border:#E5EAF0; --border-strong:#CFD7E0;
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;
+}
+*{box-sizing:border-box;} html{scroll-behavior:smooth;}
+body{margin:0;font-family:var(--font-sans);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;line-height:1.55;}
+a{color:var(--sf-blue-deep);}
+.topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:0.85rem 5vw;background:rgba(10,46,68,0.97);color:#fff;border-bottom:1px solid rgba(255,255,255,0.08);}
+.topbar .brand{font-weight:700;font-size:0.98rem;display:flex;align-items:center;gap:0.5rem;white-space:nowrap;}
+.topbar .brand .snow{color:var(--sf-cyan);}
+.topbar nav{display:flex;gap:0.35rem;flex-wrap:wrap;}
+.topbar nav a{color:rgba(255,255,255,0.82);text-decoration:none;font-size:0.85rem;font-weight:600;padding:0.35em 0.7em;border-radius:7px;transition:background .15s,color .15s;}
+.topbar nav a:hover{background:rgba(255,255,255,0.12);color:#fff;}
+.topbar nav a.active{background:var(--sf-blue);color:#fff;}
+.hero{background:radial-gradient(120% 130% at 85% -10%,var(--sf-blue-deep) 0%,var(--sf-blue-darker) 70%);color:#fff;padding:8vh 5vw 7vh;}
+.hero .eyebrow{color:var(--sf-cyan);}
+.eyebrow{font-size:0.78rem;font-weight:800;text-transform:uppercase;letter-spacing:0.16em;color:var(--amber);display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;}
+.eyebrow::before{content:"\25C9";opacity:0.8;}
+.hero h1{font-size:clamp(2.2rem,6vw,3.8rem);font-weight:800;letter-spacing:-0.02em;margin:0 0 1rem;line-height:1.03;}
+.hero h1 .pun{color:var(--sf-cyan);}
+.hero p{font-size:clamp(1.05rem,2.4vw,1.4rem);color:rgba(255,255,255,0.9);max-width:60ch;margin:0;}
+.wrap{max-width:1060px;margin:0 auto;padding:0 5vw;}
+section.band{padding:6vh 0;}
+section.band.alt{background:var(--bg-alt);}
+section.band > .wrap > .eyebrow{color:var(--amber);}
+h2{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800;color:var(--sf-blue-deep);letter-spacing:-0.02em;margin:0 0 1.2rem;}
+.lead{font-size:1.15rem;color:var(--text-muted);max-width:66ch;margin:0 0 1.5rem;}
+.svg-frame{margin:2rem 0 0.5rem;} .svg-frame svg{display:block;width:100%;height:auto;}
+.svg-cap{color:var(--text-muted);font-size:0.95rem;text-align:center;margin-top:0.5rem;}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem;margin-top:1rem;}
+.card{display:block;text-decoration:none;color:inherit;background:var(--bg);border:1px solid var(--border);border-top:5px solid var(--sf-blue);border-radius:14px;padding:1.8rem;transition:box-shadow .18s,transform .18s;}
+.card:hover{box-shadow:0 12px 30px rgba(17,86,127,0.12);transform:translateY(-3px);}
+.card .step{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber-deep);}
+.card h3{margin:0.4rem 0 0.5rem;font-size:1.35rem;color:var(--sf-blue-deep);}
+.card p{margin:0;color:var(--text-muted);font-size:1rem;}
+.card .go{display:inline-block;margin-top:1rem;font-weight:700;color:var(--sf-blue-deep);font-size:0.9rem;}
+pre{background:var(--sf-blue-darker);color:#e8f6fc;border-radius:12px;padding:1.1rem 1.3rem;overflow-x:auto;font-family:var(--font-mono);font-size:0.9rem;line-height:1.55;margin:1.2rem 0;}
+pre .c{color:var(--sf-cyan);} pre .ok{color:#6ee7a8;} pre .k{color:#f0b866;}
+code.inline{font-family:var(--font-mono);font-size:0.88em;background:rgba(17,86,127,0.07);padding:0.12em 0.42em;border-radius:5px;color:var(--sf-blue-deep);}
+footer{background:var(--sf-blue-darker);color:rgba(255,255,255,0.75);padding:5vh 5vw;}
+footer .wrap{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:center;}
+footer a{color:var(--sf-cyan);text-decoration:none;font-weight:600;}
+.pill{display:inline-block;background:rgba(113,211,220,0.16);color:var(--sf-cyan);border:1px solid rgba(113,211,220,0.3);border-radius:20px;padding:0.2em 0.8em;font-size:0.8rem;font-weight:700;}
+@media (max-width:760px){ .cards{grid-template-columns:1fr;} .topbar{flex-direction:column;align-items:flex-start;} }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span>&#10052;</span><span><span class="snow">Cortex Code, Headless</span> &middot; Mission Log</span></div>
+  <nav>
+    <a href="index.html" class="active">Overview</a>
+    <a href="walkthrough.html">Flight Plan</a>
+    <a href="preflight.html">Pre-Flight</a>
+    <a href="launch.html">Launch</a>
+    <a href="payload.html">Payload</a>
+    <a href="../executive.html">Briefing</a>
+  </nav>
+</div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Mission log</div>
+    <h1>A headless Cortex Code agent, <span class="pun">running on Snowflake</span></h1>
+    <p>The technical record for the headless agent template: how it's built, the exact Snowpark Container Services auth path that makes it fly, how to deploy it, and how to make it your own.</p>
+  </div>
+</header>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow">The craft</div>
+    <h2>One request, end to end</h2>
+    <p class="lead">A client calls the public endpoint; SPCS ingress forwards to the FastAPI service; the Cortex Code Agent SDK drives the <code class="inline">cortex</code> CLI, which runs the agent loop against Snowflake Cortex; the answer streams back over SSE.</p>
+    <div class="svg-frame">
+      <svg viewBox="0 0 1000 200" role="img" aria-label="Request path from client through SPCS ingress, FastAPI, SDK and CLI, to Cortex, streaming back.">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#11567F"></path></marker></defs>
+        <g font-family="-apple-system,Segoe UI,sans-serif" font-size="14" text-anchor="middle">
+          <g><rect x="4" y="66" width="150" height="64" rx="9" fill="#E8F6FC" stroke="#29B5E8" stroke-width="1.5"></rect><text x="79" y="93" font-weight="700" fill="#11567F">Client</text><text x="79" y="114" font-size="12" fill="#5A6872">curl / app</text></g>
+          <g><rect x="192" y="66" width="150" height="64" rx="9" fill="#E8F6FC" stroke="#29B5E8" stroke-width="1.5"></rect><text x="267" y="89" font-weight="700" fill="#11567F">SPCS Ingress</text><text x="267" y="110" font-size="12" fill="#5A6872">public endpoint</text></g>
+          <g><rect x="380" y="66" width="150" height="64" rx="9" fill="#D9EEF9" stroke="#11567F" stroke-width="2"></rect><text x="455" y="89" font-weight="700" fill="#11567F">FastAPI</text><text x="455" y="110" font-size="12" fill="#5A6872">POST /chat (SSE)</text></g>
+          <g><rect x="568" y="66" width="150" height="64" rx="9" fill="#FBF2E3" stroke="#E0912F" stroke-width="2"></rect><text x="643" y="89" font-weight="700" fill="#B06E1C">SDK + CLI</text><text x="643" y="110" font-size="12" fill="#5A6872">agent loop</text></g>
+          <g><rect x="756" y="66" width="150" height="64" rx="9" fill="#F1F8F4" stroke="#2E7D32" stroke-width="1.5"></rect><text x="831" y="89" font-weight="700" fill="#2E7D32">Cortex</text><text x="831" y="110" font-size="12" fill="#5A6872">inference</text></g>
+        </g>
+        <g stroke="#11567F" stroke-width="2.5" fill="none">
+          <line x1="156" y1="98" x2="190" y2="98" marker-end="url(#arr)"></line>
+          <line x1="344" y1="98" x2="378" y2="98" marker-end="url(#arr)"></line>
+          <line x1="532" y1="98" x2="566" y2="98" marker-end="url(#arr)"></line>
+          <line x1="720" y1="98" x2="754" y2="98" marker-end="url(#arr)"></line>
+        </g>
+        <path d="M831 132 C 831 178, 455 178, 455 132" stroke="#2E7D32" stroke-width="2.5" fill="none" stroke-dasharray="6 5" marker-end="url(#arr)"></path>
+        <text x="643" y="196" text-anchor="middle" font-family="-apple-system,Segoe UI,sans-serif" font-size="13" fill="#2E7D32">answer streams back token by token</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section class="band alt">
+  <div class="wrap">
+    <div class="eyebrow">The log</div>
+    <h2>Four exhibits</h2>
+    <div class="cards">
+      <a class="card" href="walkthrough.html"><div class="step">01 &middot; Flight Plan</div><h3>Architecture &amp; walkthrough</h3><p>The pieces of the template, the request path, and how the service, SDK, CLI, and container fit together.</p><span class="go">Open the flight plan &rarr;</span></a>
+      <a class="card" href="preflight.html"><div class="step">02 &middot; Pre-Flight</div><h3>The SPCS auth recipe</h3><p>The exact, validated path to make Cortex inference work from a container: PAT, auth-policy bypass, external host, egress.</p><span class="go">Run the checks &rarr;</span></a>
+      <a class="card" href="launch.html"><div class="step">03 &middot; Launch</div><h3>Deploy to SPCS</h3><p>Setup SQL, build and push the image, create the service, and call the API. Copy-paste runbook.</p><span class="go">Start the sequence &rarr;</span></a>
+      <a class="card" href="payload.html"><div class="step">04 &middot; Payload</div><h3>Make it yours</h3><p>Add custom tools, hooks, and permission policy; tune auth modes and configuration for the POC.</p><span class="go">Load the payload &rarr;</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow">Wheels up</div>
+    <h2>Run it locally in two commands</h2>
+    <p class="lead">Requires the <code class="inline">cortex</code> CLI on your PATH and a Snowflake connection in <code class="inline">~/.snowflake/config.toml</code>.</p>
+    <pre><span class="c"># install deps and run one prompt against your connection</span>
+make sync
+make run <span class="k">PROMPT</span>=<span class="ok">"What tables are in SALES.PUBLIC?"</span>
+
+<span class="c"># or run the API locally</span>
+make dev   <span class="c"># then: curl -N localhost:8000/chat -d '{"prompt":"..."}'</span></pre>
+    <p><span class="pill">dev-first</span> &nbsp; The same code deploys to SPCS unchanged; only the auth mode differs. See <a href="preflight.html">Pre-Flight</a> and <a href="launch.html">Launch</a>.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Cortex Code Headless Agent template &middot; a launch-ready POC scaffold.</span>
+    <span><a href="../executive.html">&larr; Executive briefing</a> &nbsp;&middot;&nbsp; <a href="walkthrough.html">Flight Plan &rarr;</a></span>
+  </div>
+</footer>
+
+</body>
+</html>

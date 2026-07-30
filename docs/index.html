@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="snowflake-source" content="cortex-agent-authored" />
+<title>Cortex Code, Headless</title>
+<script type="application/json" id="snowflake-report-metadata">
+{
+  "generated": "2026-07-27",
+  "intent": "Landing page (GitHub Pages root) for the Cortex Code Headless Agent template. Links to the two artifacts: the executive slide deck and the technical doc-site. Self-contained, dependency-free HTML, Mission Control motif.",
+  "sources": [ { "type": "file", "path": "_github/cortex-code-headless-template/README.md" } ]
+}
+</script>
+<style>
+:root{--sf-blue:#29B5E8;--sf-blue-deep:#11567F;--sf-blue-darker:#0A2E44;--sf-cyan:#71D3DC;--amber:#E0912F;--amber-deep:#B06E1C;--go:#2E7D32;--bg:#FFFFFF;--text:#1E2A33;--text-muted:#5A6872;--border:#E5EAF0;--font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--font-mono:"SF Mono",Menlo,Consolas,"Courier New",monospace;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--font-sans);color:#fff;background:var(--sf-blue-darker);-webkit-font-smoothing:antialiased;line-height:1.6;min-height:100vh;
+  background:radial-gradient(130% 110% at 80% -10%,var(--sf-blue-deep) 0%,var(--sf-blue-darker) 65%);}
+.wrap{max-width:1000px;margin:0 auto;padding:9vh 6vw;}
+.brand{display:flex;align-items:center;gap:0.6rem;font-weight:600;font-size:1.05rem;color:#fff;margin-bottom:3.5vh;}
+.brand .divider{color:var(--sf-cyan);margin:0 0.4rem;font-weight:300;}
+.eyebrow{font-size:0.8rem;font-weight:800;text-transform:uppercase;letter-spacing:0.16em;color:var(--amber);display:flex;align-items:center;gap:0.5rem;margin-bottom:1.2rem;}
+.eyebrow::before{content:"\25C9";opacity:0.85;}
+h1{font-size:clamp(2.4rem,7vw,4.4rem);font-weight:800;letter-spacing:-0.02em;line-height:1.02;margin:0 0 1.2rem;}
+h1 .pun{color:var(--sf-cyan);}
+.tag{font-size:clamp(1.1rem,2.6vw,1.6rem);color:rgba(255,255,255,0.9);max-width:56ch;margin:0 0 1rem;}
+.sub{color:rgba(255,255,255,0.65);max-width:60ch;margin:0 0 5vh;}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:1.6rem;}
+.card{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);border-radius:16px;padding:2.2rem;transition:transform .18s,border-color .18s,background .18s;}
+.card:hover{transform:translateY(-4px);border-color:var(--sf-cyan);background:rgba(255,255,255,0.09);}
+.card .ico{font-size:2.2rem;line-height:1;}
+.card .k{font-size:0.72rem;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:var(--sf-cyan);margin-top:1rem;}
+.card h2{font-size:1.5rem;margin:0.35rem 0 0.6rem;color:#fff;}
+.card p{margin:0;color:rgba(255,255,255,0.75);font-size:1rem;flex:1;}
+.card .go{margin-top:1.4rem;font-weight:700;color:var(--sf-cyan);}
+.foot{margin-top:6vh;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;color:rgba(255,255,255,0.6);font-size:0.9rem;}
+.foot a{color:var(--sf-cyan);text-decoration:none;font-weight:600;}
+.foot code{font-family:var(--font-mono);background:rgba(255,255,255,0.1);padding:0.12em 0.5em;border-radius:5px;color:#fff;}
+@media (max-width:720px){ .cards{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand"><span>&#10052;</span><span>Snowflake <span class="divider">|</span> Cortex Code Agent SDK</span></div>
+  <div class="eyebrow">Mission control</div>
+  <h1>Cortex Code, <span class="pun">Headless</span></h1>
+  <p class="tag">An autonomous Snowflake agent, deployed as a service.</p>
+  <p class="sub">A launch-ready template for customer POCs: the Cortex Code Agent SDK wrapped in a FastAPI + SSE service, with the full Snowpark Container Services deployment path solved and validated end to end.</p>
+
+  <div class="cards">
+    <a class="card" href="executive.html">
+      <div class="ico">&#128202;</div>
+      <div class="k">The briefing</div>
+      <h2>Executive deck</h2>
+      <p>An 11-slide walk through the why: headless agents, the launch blockers, the template, and the proof it flies. Present it, or print to PDF.</p>
+      <div class="go">Open the deck &rarr;</div>
+    </a>
+    <a class="card" href="guide/index.html">
+      <div class="ico">&#128225;</div>
+      <div class="k">The mission log</div>
+      <h2>Technical doc-site</h2>
+      <p>The how: architecture, the validated SPCS auth recipe, the deploy runbook, and how to extend it with your own tools.</p>
+      <div class="go">Open the guide &rarr;</div>
+    </a>
+  </div>
+
+  <div class="foot">
+    <span>Repo: <a href="https://github.com/innovation-igloo/cortex-code-headless-template">innovation-igloo/cortex-code-headless-template</a></span>
+    <span>Run locally: <code>make dev</code></span>
+  </div>
+</div>
+</body>
+</html>

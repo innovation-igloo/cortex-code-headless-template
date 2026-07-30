@@ -1,0 +1,48 @@
+[project]
+name = "cortex-code-headless-agent"
+version = "0.1.0"
+description = "Headless Cortex Code Agent service (FastAPI + SSE), packaged for local dev and Snowpark Container Services."
+requires-python = ">=3.10"
+license = "Apache-2.0"
+dependencies = [
+    # SDK is pinned intentionally: it is tightly coupled to the cortex CLI
+    # (MINIMUM_CLI_VERSION lives inside the SDK). Bump this and the Dockerfile
+    # CLI version together.
+    "cortex-code-agent-sdk==1.0.0",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "httpx>=0.27",
+    "ruff>=0.7",
+    "mypy>=1.13",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/headless_agent"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true

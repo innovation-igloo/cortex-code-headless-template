@@ -1,0 +1,56 @@
+# -----------------------------------------------------------------------------
+# SPCS service specification for the Cortex Code Headless Agent.
+#
+# Standalone copy of the spec used by 20_create_service.sql (which is the
+# authoritative CREATE SERVICE). Replace <REPO_URL> and <ORG-ACCOUNT>.
+#
+# Auth: PAT (auth_mode=pat). The container writes config.toml from the
+# SNOWFLAKE_CONNECTIONS_POC_* env vars + the injected AGENT_PAT secret, using the
+# EXTERNAL account host. Requires (set on CREATE SERVICE, not in this spec):
+#   EXTERNAL_ACCESS_INTEGRATIONS = (CORTEX_HEADLESS_EAI)
+# and the service user's auth policy must have
+#   PAT_POLICY = ( NETWORK_POLICY_EVALUATION = NOT_ENFORCED ).
+# See deploy/00_setup.sql and the README "SPCS auth" section.
+# -----------------------------------------------------------------------------
+spec:
+  containers:
+    - name: agent
+      image: <REPO_URL>/cortex-headless-agent:latest
+      env:
+        HEADLESS_AGENT_AUTH_MODE: pat
+        HEADLESS_AGENT_CONNECTION: poc
+        HEADLESS_AGENT_MODEL: auto
+        HEADLESS_AGENT_PORT: "8000"
+        HEADLESS_AGENT_ALLOWED_TOOLS: "SQL,Read,Grep,Glob"
+        HEADLESS_AGENT_PERMISSION_MODE: default
+        HEADLESS_AGENT_LOG_LEVEL: INFO
+        # Env-var connection 'poc' — EXTERNAL account (org-account form), no host.
+        SNOWFLAKE_CONNECTIONS_POC_ACCOUNT: <ORG-ACCOUNT>
+        SNOWFLAKE_CONNECTIONS_POC_USER: CORTEX_HEADLESS_SVC
+        SNOWFLAKE_CONNECTIONS_POC_ROLE: SYSADMIN
+        SNOWFLAKE_CONNECTIONS_POC_WAREHOUSE: CORTEX_HEADLESS_WH
+        SNOWFLAKE_CONNECTIONS_POC_AUTHENTICATOR: programmatic_access_token
+      secrets:
+        # PAT value -> the connection PASSWORD env var.
+        - snowflakeSecret: CORTEX_HEADLESS_DB.APP.AGENT_PAT
+          secretKeyRef: secret_string
+          envVarName: SNOWFLAKE_CONNECTIONS_POC_PASSWORD
+      readinessProbe:
+        port: 8000
+        path: /ready
+      resources:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          cpu: "2"
+          memory: 4Gi
+  endpoints:
+    - name: api
+      port: 8000
+      public: true
+# Expose only the API endpoint via a named service role (least privilege).
+serviceRoles:
+  - name: api_user
+    endpoints:
+      - api
